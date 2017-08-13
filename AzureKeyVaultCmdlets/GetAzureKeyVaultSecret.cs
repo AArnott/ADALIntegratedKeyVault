@@ -42,6 +42,12 @@ namespace AzureKeyVaultCmdlets
         [Parameter(Mandatory = true)]
         public string SecretName { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the cmdlet should fail rather than prompt the user for credentials.
+        /// </summary>
+        [Parameter]
+        public SwitchParameter NonInteractive { get; set; }
+
         /// <inheritdoc />
         protected override void ProcessRecord()
         {
@@ -49,8 +55,8 @@ namespace AzureKeyVaultCmdlets
                           new KeyVaultClient.AuthenticationCallback(this.GetAccessTokenAsync),
                           new HttpClient());
 
-            string secret = keyVault.GetSecretAsync(this.KeyVaultAddress.AbsoluteUri, this.SecretName).Result.Value;
-            this.WriteObject(secret);
+            var secret = keyVault.GetSecretAsync(this.KeyVaultAddress.AbsoluteUri, this.SecretName).GetAwaiter().GetResult();
+            this.WriteObject(secret.Value);
         }
 
         private async Task<string> GetAccessTokenAsync(string authority, string resource, string scope)
@@ -69,7 +75,7 @@ namespace AzureKeyVaultCmdlets
                     // Try to get the token silently, either using the token cache or browser cookies.
                     result = await context.AcquireTokenAsync(resource, this.ADALClientId, this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Never));
                 }
-                catch (AdalException)
+                catch (AdalException) when (!this.NonInteractive)
                 {
                     // OK, ultimately fail: ask the user to authenticate manually.
                     result = await context.AcquireTokenAsync(resource, this.ADALClientId, this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Always));
