@@ -18,7 +18,7 @@ namespace AzureKeyVaultCmdlets
         /// Be sure to grant your app permissions to "Azure Key Vault (AzureKeyVault)".
         /// </remarks>
         [Parameter(Mandatory = true)]
-        public string ADALClientId { get; set; }
+        public Guid ADALClientId { get; set; }
 
         /// <summary>
         /// A URI recorded for the AAD registered app as a valid redirect URI.
@@ -66,19 +66,19 @@ namespace AzureKeyVaultCmdlets
             try
             {
                 // Try to get the token from Windows auth
-                result = await context.AcquireTokenAsync(resource, this.ADALClientId, new UserCredential());
+                result = await context.AcquireTokenAsync(resource, this.ADALClientId.ToString(), new UserCredential());
             }
             catch (AdalException)
             {
                 try
                 {
                     // Try to get the token silently, either using the token cache or browser cookies.
-                    result = await context.AcquireTokenAsync(resource, this.ADALClientId, this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Never));
+                    result = await context.AcquireTokenAsync(resource, this.ADALClientId.ToString(), this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Never));
                 }
                 catch (AdalException) when (!this.NonInteractive)
                 {
                     // OK, ultimately fail: ask the user to authenticate manually.
-                    result = await context.AcquireTokenAsync(resource, this.ADALClientId, this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Always));
+                    result = await context.AcquireTokenAsync(resource, this.ADALClientId.ToString(), this.ADALRedirectUri, new PlatformParameters(PromptBehavior.Always));
                 }
             }
 
