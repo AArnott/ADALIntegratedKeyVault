@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Get-AzureKeyVaultSecret": {
+      "commandName": "Project",
+      "commandLineArgs": "--AdalClientId 2dd946a1-7f44-4f96-8f33-04ed532ae4eb --AdalRedirectUri http://VSIDEEngineering/finish --KeyVaultAddress https://connectedexperience.vault.azure.net/ --SecretName myget-access-token --NonInteractive"
+    }
+  }
+}
